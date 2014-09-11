@@ -174,7 +174,7 @@ if($cygwinInstalled) {
 # START
 Write-Progress -Activity "Starting Vagrant" -Status "Installing/Booting Vagrant Box" -PercentComplete 80
 $status = (vagrant status | ? { $_ -match "default" }) -replace "^default\s*",""
-if($status -match "not created") {
+if($status -match "not created|poweroff") {
     vagrant up
 } elseif ($status -match "suspended") {
     vagrant resume
@@ -191,6 +191,4 @@ vagrant ssh -c "cd /vagrant; bash -c './build.sh $Command'"
 
 # SUSPEND - only works post 1.6.5
 $vagrantVersion = (vagrant --version) -replace "^[^\d]*((\d*\.?)+).*$","`$1"
-if([Version]::new($vagrantVersion) -ge [Version]::new("1.6.5")) {
-    vagrant suspend
-}
+vagrant halt
