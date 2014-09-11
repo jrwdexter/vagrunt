@@ -64,9 +64,9 @@ function Install-ChocolateyPackage
     Write-Progress -PercentComplete $Progress -Activity $installingDependancies -Status $TestingMessage
     $Progress += 5
     if($Test -eq $null) {
-        $Test = { Get-Command -ErrorAction SilentlyContinue $PackageName }
+        $Test = { (Get-Command -ErrorAction SilentlyContinue $PackageName) -ne $null}
     }
-    if($Test.Invoke() -ne $null){
+    if($Test.Invoke()){
         return $False
     }
     else {
@@ -107,11 +107,11 @@ $null = Install-ChocolateyPackage -PackageName vagrant -TestingMessage "Testing 
 
 # VIRTUALBOX
 $virtualBoxTest = {
-    ((Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* |  % {
+    (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* |  % {
         $_.DisplayName
     } | ? {
         $_ -ne $null -and  $_.ToLower().Contains("virtualbox") 
-    }).Length -gt 0)
+    }).Length -gt 0
 }
 $null = Install-ChocolateyPackage -Test $virtualBoxTest -PackageName "virtualbox" -TestingMessage "Installation Detected - Virtualbox" -InstallingMessage "Installing Virtualbox..." -Progress 40
 
@@ -129,16 +129,41 @@ if((Test-Path "$PSScriptRoot\puppet\modules") -eq $false) {
 
 # SSH (CYGWIN)
 $sshTest = {
-    Get-Command ssh -ErrorAction SilentlyContinue
+    $command = Get-Command ssh -ErrorAction SilentlyContinue
+    if($command -eq $null -or ((ssh) -match "plink")) {
+        return $False
+    }
+    return $True
 }
 $cygwinInstalled = Install-ChocolateyPackage -Test $sshTest -PackageName cygwin -TestingMessage "Testing Program - SSH" -InstallingMessage "Installing Cygwin" -Progress 60
 if($cygwinInstalled) {
     Write-Host "Starting cygwin package manager.  Please install the open SSH package."
-    & C:\tools\cygwin\cygwinsetup.exe
-    while($true) {
+    cygwinsetup
+    Write-Progress -PercentComplete 70 -Activity $installingDependancies -Status "Detecting Cygwin Setup"
+    while((Get-Process -Name cygwinsetup -ErrorAction SilentlyContinue) -eq $null) {
         Start-Sleep -Milliseconds 250
-        if(Get-Process -Name cygwinsetup -ErrorAction SilentlyContinue)
-        { break; }
+    }
+
+    while($true) {
+        Write-Progress -PercentComplete 70 -Activity $installingDependancies -Status "Waiting on Open SSH package install"
+        Start-Sleep -Milliseconds 250
+        if((Get-Process -Name cygwinsetup -ErrorAction SilentlyContinue) -eq $null)
+        { 
+            Update-Path
+            if($sshTest.Invoke() -eq $False) {
+                if($env:PATH -notmatch "C:\\tools\\cygwin\\bin") {
+                    $userPath = [Environment]::GetEnvironmentVariable("Path", "User")
+                    [Environment]::SetEnvironmentVariable("Path", "C:\tools\cygwin\bin;$userPath", "User")
+                    Update-Path
+                }
+
+                if($sshTest.Invoke() -eq $False) {
+                    Write-Warning "SSH not in path or is using Putty SSH instead (not supported)"
+                    return
+                }
+            }
+            break; 
+        }
     }
 }
 
@@ -165,6 +190,7 @@ Write-Progress -Activity "Starting Vagrant" -Status "Running commands" -PercentC
 vagrant ssh -c "cd /vagrant; bash -c './build.sh $Command'"
 
 # SUSPEND - only works post 1.6.5
-if([Version]::new((vagrant --version)) -ge [Version]::new("1.6.5")) {
+$vagrantVersion = (vagrant --version) -replace "^[^\d]*((\d*\.?)+).*$","`$1"
+if([Version]::new($vagrantVersion) -ge [Version]::new("1.6.5")) {
     vagrant suspend
 }
