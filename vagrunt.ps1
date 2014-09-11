@@ -1,5 +1,6 @@
 param(
-    [String]$Command
+    [String]$Command,
+    [Switch]$StayOn
 )
 
 #################
@@ -189,6 +190,8 @@ if($LastExitCode -ne 0) {
 Write-Progress -Activity "Starting Vagrant" -Status "Running commands" -PercentComplete 90
 vagrant ssh -c "cd /vagrant; bash -c './build.sh $Command'"
 
-# SUSPEND - only works post 1.6.5
+# SUSPEND/HALE - suspend doesn't work
 $vagrantVersion = (vagrant --version) -replace "^[^\d]*((\d*\.?)+).*$","`$1"
-vagrant halt
+if($Halt) {
+    vagrant halt
+}
