@@ -128,43 +128,34 @@ if((Test-Path "$PSScriptRoot\puppet\modules") -eq $false) {
     }
 }
 
-# SSH (CYGWIN)
+# SSH (GIT)
 $sshTest = {
     $command = Get-Command ssh -ErrorAction SilentlyContinue
-    if($command -eq $null -or ((ssh) -match "plink")) {
+    if(($command -eq $null) -or ((ssh) -match "plink")) {
         return $False
     }
     return $True
 }
-$cygwinInstalled = Install-ChocolateyPackage -Test $sshTest -PackageName cygwin -TestingMessage "Testing Program - SSH" -InstallingMessage "Installing Cygwin" -Progress 60
-if($cygwinInstalled) {
-    Write-Host "Starting cygwin package manager.  Please install the open SSH package."
-    cygwinsetup
-    Write-Progress -PercentComplete 70 -Activity $installingDependancies -Status "Detecting Cygwin Setup"
-    while((Get-Process -Name cygwinsetup -ErrorAction SilentlyContinue) -eq $null) {
-        Start-Sleep -Milliseconds 250
+$gitTest = {
+    ($sshTest.Invoke()) -or (Test-Path "C:\Program Files\Git\bin\ssh.exe") -or (Test-Path "C:\Program Files (x86)\Git\bin\ssh.exe")
+}
+
+$gitInstalled = Install-ChocolateyPackage -Test $gitTest -PackageName git -TestingMessage "Testing Program - SSH" -InstallingMessage "Installing Git" -Progress 60
+
+if(-not ($sshTest.Invoke())) {
+    if($env:PATH -notmatch "C:\\Program Files( \(x86\))?\\Git\\bin") {
+        $userPath = [Environment]::GetEnvironmentVariable("Path", "User")
+        if(Test-Path "C:\Program Files (x86)\Git\bin\ssh.exe") {
+            [Environment]::SetEnvironmentVariable("Path", "C:\Program Files (x86)\Git\bin;$userPath", "User")
+        } elseif(Test-Path "C:\Program Files\Git\bin\ssh.exe") {
+            [Environment]::SetEnvironmentVariable("Path", "C:\Program Files\Git\bin;$userPath", "User")
+        }
+        Update-Path
     }
 
-    while($true) {
-        Write-Progress -PercentComplete 70 -Activity $installingDependancies -Status "Waiting on Open SSH package install"
-        Start-Sleep -Milliseconds 250
-        if((Get-Process -Name cygwinsetup -ErrorAction SilentlyContinue) -eq $null)
-        { 
-            Update-Path
-            if($sshTest.Invoke() -eq $False) {
-                if($env:PATH -notmatch "C:\\tools\\cygwin\\bin") {
-                    $userPath = [Environment]::GetEnvironmentVariable("Path", "User")
-                    [Environment]::SetEnvironmentVariable("Path", "C:\tools\cygwin\bin;$userPath", "User")
-                    Update-Path
-                }
-
-                if($sshTest.Invoke() -eq $False) {
-                    Write-Warning "SSH not in path or is using Putty SSH instead (not supported)"
-                    return
-                }
-            }
-            break; 
-        }
+    if($sshTest.Invoke() -eq $False) {
+        Write-Warning "SSH not in path or is using Putty SSH instead (not supported)"
+        return
     }
 }
 
@@ -192,6 +183,6 @@ vagrant ssh -c "cd /vagrant; bash -c './build.sh $Command'"
 
 # SUSPEND/HALE - suspend doesn't work
 $vagrantVersion = (vagrant --version) -replace "^[^\d]*((\d*\.?)+).*$","`$1"
-if($Halt) {
+if(-not $StayOn) {
     vagrant halt
 }
