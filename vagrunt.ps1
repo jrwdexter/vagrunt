@@ -153,7 +153,7 @@ if(-not ($sshTest.Invoke())) {
         Update-Path
     }
 
-    if($sshTest.Invoke() -eq $False) {
+    if(-not ($sshTest.Invoke())) {
         Write-Warning "SSH not in path or is using Putty SSH instead (not supported)"
         return
     }
