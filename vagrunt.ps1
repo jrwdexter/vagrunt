@@ -16,11 +16,11 @@ function Check-Hypervisor() {
     $hypervisorLaunchType = ($bcdInfo[$currentLineIndex..$bcdInfo.Length] | ? {$_ -match "hypervisorlaunchtype" }) -replace "^hypervisorlaunchtype\s*",""
     if($hypervisorlaunchtype -notmatch "^[Oo]ff") {
         Write-Host "Hyper-V is enabled.  Would you like this script to add a new boot entry with Hyper-V disabled? [y/N]"
-        $key = Get-Content
+        $key = Read-Host
         if($key -eq "y" -or $key -eq "Y") {
             Write-Host "Adding new boot entry for disabled Hyper-V."
             Write-Host "What would you like to name the new boot entry? Your current boot entry is named $currentName. [Default: $currentName (No Hyper-V)]"
-            $newName = Get-Content
+            $newName = Read-Host
             if($newName -eq $null -or $newName -match "^\s*$") {
                 $newName = "$currentName (No Hyper-V)"
             }
