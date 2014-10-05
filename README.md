@@ -11,11 +11,11 @@ To install, simply run the below command in the repository's directory:
 
 Powershell:
 
-`iex ((New-Object Net.WebClient).DownloadString("https://raw.githubusercontent.com/mandest/vagrunt/master/install.ps1"))`
+`iex ((New-Object Net.WebClient).DownloadString("http://goo.gl/ZcYjb2"))`
 
 Command Prompt:
 
-`@powershell -NoProfile -ExecutionPolicy unrestricted -Command "iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/mandest/vagrunt/master/install.ps1'))"`
+`@powershell -NoProfile -ExecutionPolicy unrestricted -Command "iex ((new-object net.webclient).DownloadString('http://goo.gl/ZcYjb2'))"`
 
 ## Usage
 
