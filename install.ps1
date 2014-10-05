@@ -99,12 +99,13 @@ Get-ChildItem "$tempPath\vagrunt-master" | ? {
 
 # Update .gitignore
 Write-Progress -Activity "Installing Vagrunt" -Status "Updating .gitignore if present" -PercentComplete 80
-$gitignore = Get-Gitignore -CurrentDirectory "./"
+$gitignore = Get-Gitignore -CurrentDirectory "."
 if($gitignore -ne $null) {
-  if((Get-Content $gitignore | ? {$_ -match "/puppet/modules/"}) -eq 0) {
-    "`n**/puppet/modules/" | Out-File -Append $gitignore
+  "`n# Vagrunt" | Out-File -Append $gitignore
+  if((Get-Content $gitignore | ? {$_ -match "/puppet/modules/"}).Length -eq 0) {
+    "**/puppet/modules/" | Out-File -Append $gitignore
   }
-  if((Get-Content $gitignore | ? {$_ -match ".vagrant"}) -eq 0) {
+  if((Get-Content $gitignore | ? {$_ -match ".vagrant"}).Length -eq 0) {
     ".vagrant" | Out-File -Append $gitignore
   }
 }
