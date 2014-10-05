@@ -16,11 +16,11 @@ function Check-Hypervisor() {
     $hypervisorLaunchType = ($bcdInfo[$currentLineIndex..$bcdInfo.Length] | ? {$_ -match "hypervisorlaunchtype" }) -replace "^hypervisorlaunchtype\s*",""
     if($hypervisorlaunchtype -notmatch "^[Oo]ff") {
         Write-Host "Hyper-V is enabled.  Would you like this script to add a new boot entry with Hyper-V disabled? [y/N]"
-        $key = Read-Host
+        $key = Get-Content
         if($key -eq "y" -or $key -eq "Y") {
             Write-Host "Adding new boot entry for disabled Hyper-V."
             Write-Host "What would you like to name the new boot entry? Your current boot entry is named $currentName. [Default: $currentName (No Hyper-V)]"
-            $newName = Read-Host
+            $newName = Get-Content
             if($newName -eq $null -or $newName -match "^\s*$") {
                 $newName = "$currentName (No Hyper-V)"
             }
@@ -120,7 +120,7 @@ $null = Install-ChocolateyPackage -Test $virtualBoxTest -PackageName "virtualbox
 $null = Install-ChocolateyPackage -PackageName puppet -TestingMessage "Testing Program - Puppet" -InstallingMessage "Installing Puppet..." -Progress 30
 if((Test-Path "$PSScriptRoot\puppet\modules") -eq $false) {
     New-Item -ItemType Directory -Path "$PSScriptRoot\puppet\modules"
-    @("puppetlabs-sdlib", "puppetlabs-apt", "willdurand-nodejs", "puppetlabs-ruby", "maestrodev-wget") | % {
+    @("puppetlabs-sdlib", "puppetlabs-apt", "willdurand-nodejs", "puppetlabs-ruby", "maestrodev-wget", "maestrodev-rvm") | % {
         $folder = $_ -replace "^[^-]*-",""
         if((Test-Path "$PSScriptRoot\puppet\modules\$folder") -eq $false) {
             puppet module install -i "$PSScriptRoot\puppet\modules" --force $_
@@ -166,7 +166,7 @@ if(-not ($sshTest.Invoke())) {
 # START
 Write-Progress -Activity "Starting Vagrant" -Status "Installing/Booting Vagrant Box" -PercentComplete 80
 $status = (vagrant status | ? { $_ -match "default" }) -replace "^default\s*",""
-if($status -match "not created|poweroff") {
+if($status -match "not created|poweroff|aborted") {
     vagrant up
 } elseif ($status -match "suspended") {
     vagrant resume
@@ -181,7 +181,7 @@ if($LastExitCode -ne 0) {
 Write-Progress -Activity "Starting Vagrant" -Status "Running commands" -PercentComplete 90
 vagrant ssh -c "cd /vagrant; bash -c './build.sh $Command'"
 
-# SUSPEND/HALE - suspend doesn't work
+# SUSPEND/HALT - suspend doesn't work
 $vagrantVersion = (vagrant --version) -replace "^[^\d]*((\d*\.?)+).*$","`$1"
 if(-not $StayOn) {
     vagrant halt

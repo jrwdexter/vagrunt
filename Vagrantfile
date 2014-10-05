@@ -27,9 +27,12 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   ##### PUPPET #####
   ##################
   config.vm.provision "puppet" do |puppet|
-    puppet.hiera_config_path = 'puppet/hiera.yaml'
+    puppet.options = ["--parser future"]
+
     puppet.manifests_path = "puppet/manifests"
     puppet.module_path   = "puppet/modules"
+
+    puppet.hiera_config_path = "puppet/hiera.yaml"
     puppet.manifest_file  = "default.pp"
   end
 end

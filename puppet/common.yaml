@@ -1,0 +1,14 @@
+ruby_profile::ruby_version: "1.9"
+ruby_profile::system_users:
+  - vagrant
+ruby_profile::gemset_name: "ruby-1.9@vagrunt"
+ruby_profile::gems:
+  bundler:  'present'
+  sass:     'present'
+  hologram: 'present'
+
+nodejs_profile::manage_repo: true
+nodejs_profile::version: latest
+nodejs_profile::npms:
+  grunt-cli: 'present'
+  bower:     'present'

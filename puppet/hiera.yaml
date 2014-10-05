@@ -1,6 +1,6 @@
 ---
 :backends: yaml
 :yaml:
-  :datadir: /var/lib/hiera
+  :datadir: /vagrant/puppet/
 :hierarchy: common
 :logger: console
