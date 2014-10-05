@@ -7,7 +7,7 @@ A set of scripts that sets up a vagrant machine in which to run a Nerdery-specif
 
 ## Installation
 
-To install, simply run the below command in the repository's directory:
+To install, simply run the below command in the directory with the `build.sh` file:
 
 Powershell:
 
