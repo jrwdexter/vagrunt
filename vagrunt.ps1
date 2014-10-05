@@ -120,7 +120,7 @@ $null = Install-ChocolateyPackage -Test $virtualBoxTest -PackageName "virtualbox
 $null = Install-ChocolateyPackage -PackageName puppet -TestingMessage "Testing Program - Puppet" -InstallingMessage "Installing Puppet..." -Progress 30
 if((Test-Path "$PSScriptRoot\puppet\modules") -eq $false) {
     New-Item -ItemType Directory -Path "$PSScriptRoot\puppet\modules"
-    @("puppetlabs-sdlib", "puppetlabs-apt", "willdurand-nodejs", "puppetlabs-ruby", "maestrodev-wget", "maestrodev-rvm") | % {
+    @("puppetlabs-stdlib", "puppetlabs-apt", "puppetlabs-nodejs", "maestrodev-rvm") | % {
         $folder = $_ -replace "^[^-]*-",""
         if((Test-Path "$PSScriptRoot\puppet\modules\$folder") -eq $false) {
             puppet module install -i "$PSScriptRoot\puppet\modules" --force $_
