@@ -11,7 +11,9 @@ To install, simply run the below command in the repository's directory:
 
 Powershell:
 
-`iex ((New-Object Net.WebClient).DownloadString("http://goo.gl/ZcYjb2"))`
+```powershell
+iex ((New-Object Net.WebClient).DownloadString("http://goo.gl/ZcYjb2"))
+```
 
 Command Prompt:
 
@@ -21,11 +23,15 @@ Command Prompt:
 
 Before usage, make sure your Powershell execution policy is:
 
-`Set-ExecutionPolicy RemoteSigned`
+```powershell
+Set-ExecutionPolicy RemoteSigned
+```
 
-To use, run 
+To use, run:
 
-`vagrunt.ps1`
+```powershell
+vagrunt.ps1 [-StayOn] [-Command GruntCommand]
+```
 
 ### Notes
 
