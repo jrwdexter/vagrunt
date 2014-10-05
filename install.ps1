@@ -94,7 +94,7 @@ Write-Progress -Activity "Installing Vagrunt" -Status "Copying Files" -PercentCo
 Get-ChildItem "$tempPath\vagrunt-master" | ? { 
   $ignoredFiles -notcontains $_.Name
 } | % {
-  Copy-Item $_.FullName "./$($_.Name)"
+  Copy-Item -Recurse $_.FullName "./$($_.Name)"
 }
 
 # Update .gitignore
